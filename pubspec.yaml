@@ -1,0 +1,60 @@
+name: emori
+description: "Emori — Your AI-powered second brain."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # API calls
+  http: ^1.2.0
+
+  # Local database
+  sqflite: ^2.3.3+1
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Environment variables
+  flutter_dotenv: ^5.1.0
+
+  # UUID for entry IDs
+  uuid: ^4.4.0
+
+  # Typography
+  google_fonts: ^6.2.1
+
+  # Animations
+  flutter_animate: ^4.5.2
+
+  # Speech to text
+  speech_to_text: ^7.0.0
+
+  # Image support
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+
+  # Encryption
+  encrypt: ^5.0.3
+  flutter_local_notifications: ^21.0.0-dev.1
+  timezone: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
