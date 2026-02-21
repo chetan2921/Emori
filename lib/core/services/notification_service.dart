@@ -40,8 +40,11 @@ class NotificationService {
       },
     );
 
-    await _requestPermissions();
-    await _schedulePeriodicNotifications();
+    // Request permissions and schedule after UI has successfully rendered
+    Future.delayed(const Duration(seconds: 2), () async {
+      await _requestPermissions();
+      await _schedulePeriodicNotifications();
+    });
   }
 
   Future<void> _requestPermissions() async {
