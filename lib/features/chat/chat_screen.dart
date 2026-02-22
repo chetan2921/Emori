@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/chat_message.dart';
 import '../../core/providers/chat_provider.dart';
 import '../../core/providers/entry_provider.dart';
 import '../history/history_screen.dart';
-import '../insights/insights_screen.dart';
+import '../insights/pattern_detection_screen.dart';
+import '../insights/weekly_reflection_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -24,6 +26,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _speech = SpeechToText();
   bool _isListening = false;
   bool _speechAvailable = false;
+  bool _wasLastInputFromMic = false;
   final List<File> _selectedImages = [];
 
   @override
@@ -37,8 +40,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _requestPermissions() async {
+    // Explicitly request microphone and speech permissions
+    await [Permission.microphone, Permission.speech].request();
+  }
+
   Future<void> _toggleListening() async {
-    if (!_speechAvailable) return;
+    await _requestPermissions();
+
+    if (!_speechAvailable) {
+      // Try initializing again in case permissions were just granted
+      _speechAvailable = await _speech.initialize();
+      if (!_speechAvailable) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Speech recognition is not available or permissions were denied.',
+                style: GoogleFonts.inter(),
+              ),
+              backgroundColor: AppColors.coral,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
     if (_isListening) {
       await _speech.stop();
       setState(() => _isListening = false);
@@ -47,6 +75,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _speech.listen(
         onResult: (result) => setState(() {
           _controller.text = result.recognizedWords;
+          _wasLastInputFromMic = true; // Mark as coming from mic
           _controller.selection = TextSelection.fromPosition(
             TextPosition(offset: _controller.text.length),
           );
@@ -73,12 +102,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty && _selectedImages.isEmpty) return;
+
+    final bool speakResponse = _wasLastInputFromMic;
+
     _controller.clear();
+    _wasLastInputFromMic = false; // reset for next message
+
     final images = List<File>.from(_selectedImages);
     setState(() => _selectedImages.clear());
     _scrollToBottom();
-    // Update sendMessage to accept images
-    await ref.read(chatProvider.notifier).sendMessage(text, images: images);
+
+    await ref
+        .read(chatProvider.notifier)
+        .sendMessage(text, images: images, speakResponse: speakResponse);
     _scrollToBottom();
   }
 
@@ -183,6 +219,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Expanded(
               child: messagesAsync.when(
                 data: (messages) {
+                  if (messages.isEmpty) {
+                    return _buildEmptyState(c);
+                  }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -205,10 +244,97 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 error: (e, st) => Center(child: Text('Error: $e')),
               ),
             ),
-            if (messagesAsync.hasValue && messagesAsync.value!.length == 1)
+            if (messagesAsync.hasValue && messagesAsync.value!.isEmpty)
               _buildSuggestions(c),
             if (_selectedImages.isNotEmpty) _buildImagePreviews(c),
             _buildInput(c),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(EmoriColors c) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      'E',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 36,
+                      ),
+                    ),
+                  ),
+                )
+                .animate()
+                .scale(duration: 500.ms, curve: Curves.easeOutBack)
+                .fadeIn(duration: 500.ms),
+            const SizedBox(height: 32),
+            Text(
+                  "Hey, I'm Emori 💜",
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+                .animate(delay: 100.ms)
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOut,
+                )
+                .fadeIn(duration: 400.ms),
+            const SizedBox(height: 16),
+            const _RotatingText()
+                .animate(delay: 200.ms)
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOut,
+                )
+                .fadeIn(duration: 400.ms),
+            const SizedBox(height: 16),
+            Text(
+                  "I remember everything you've shared with me. Ask me anything about your life — your patterns, your feelings, what you've been going through. I'm here.",
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    color: c.textSecondary,
+                    height: 1.6,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+                .animate(delay: 300.ms)
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOut,
+                )
+                .fadeIn(duration: 400.ms),
           ],
         ),
       ),
@@ -264,7 +390,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const InsightsScreen(),
+                    builder: (context) => const PatternDetectionScreen(),
                   ),
                 );
               },
@@ -277,7 +403,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const InsightsScreen(),
+                    builder: (context) => const WeeklyReflectionScreen(),
                   ),
                 );
               },
@@ -532,6 +658,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     vertical: 12,
                   ),
                 ),
+                onChanged: (val) {
+                  // If they start typing manually, disable TTS for this turn
+                  if (_wasLastInputFromMic) {
+                    setState(() {
+                      _wasLastInputFromMic = false;
+                    });
+                  }
+                },
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
@@ -772,6 +906,79 @@ class _DrawerItem extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RotatingText extends StatefulWidget {
+  const _RotatingText();
+
+  @override
+  State<_RotatingText> createState() => _RotatingTextState();
+}
+
+class _RotatingTextState extends State<_RotatingText> {
+  int _currentIndex = 0;
+  final List<String> _words = ['Ask', 'Gossip', 'Discuss', 'Chat'];
+
+  @override
+  void initState() {
+    super.initState();
+    _startRotation();
+  }
+
+  void _startRotation() {
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() {
+        _currentIndex = (_currentIndex + 1) % _words.length;
+      });
+      _startRotation();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0.0, 0.5),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: FadeTransition(opacity: animation, child: child),
+            );
+          },
+          child: Text(
+            _words[_currentIndex],
+            key: ValueKey<int>(_currentIndex),
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+        Text(
+          ' as a friend',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: c.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 }

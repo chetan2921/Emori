@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../database/database.dart';
@@ -7,6 +8,9 @@ import '../models/entry.dart';
 import '../services/embedding_search.dart';
 import '../services/voyage_service.dart';
 import 'entry_provider.dart';
+import '../services/tts_service.dart';
+
+final ttsServiceProvider = Provider<TTSService>((ref) => TTSService());
 
 final chatProvider = AsyncNotifierProvider<ChatNotifier, List<ChatMessage>>(
   ChatNotifier.new,
@@ -15,22 +19,13 @@ final chatProvider = AsyncNotifierProvider<ChatNotifier, List<ChatMessage>>(
 class ChatNotifier extends AsyncNotifier<List<ChatMessage>> {
   @override
   Future<List<ChatMessage>> build() async {
-    // 1. Give users a fresh screen on launch (no history loaded here)
-    final greeting = ChatMessage(
-      id: const Uuid().v4(),
-      text:
-          "Hey, I'm Emori 💜\n\nI remember everything you've shared with me. Ask me anything about your life — your patterns, your feelings, what you've been going through. I'm here.",
-      isUser: false,
-      sessionType: 'chat',
-      createdAt: DateTime.now(),
-    );
-    // Don't save the greeting to DB since we want a truly fresh screen next time
-    return [greeting];
+    return [];
   }
 
   Future<void> sendMessage(
     String userText, {
     List<File> images = const [],
+    bool speakResponse = false,
   }) async {
     final currentState = state.valueOrNull ?? [];
 
@@ -147,7 +142,15 @@ class ChatNotifier extends AsyncNotifier<List<ChatMessage>> {
         return m;
       }).toList();
       state = AsyncData(newState);
-    } catch (e) {
+
+      if (speakResponse) {
+        final ttsService = ref.read(ttsServiceProvider);
+        ttsService.speak(answerText);
+      }
+    } catch (e, st) {
+      debugPrint('Error in sendMessage: $e');
+      debugPrint('Stack trace: $st');
+
       final errorMsg = ChatMessage(
         id: thinkingId,
         text: 'Something went wrong. Try again 💜',

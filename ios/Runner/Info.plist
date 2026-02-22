@@ -49,5 +49,9 @@
 	<string>Emori uses your camera so you can add photos to your memories</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Emori accesses your photos so you can share visual memories</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Emori uses speech recognition to convert your speech into messages</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Emori uses the microphone so you can record speech</string>
 </dict>
 </plist>

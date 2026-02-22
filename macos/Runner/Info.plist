@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Emori needs speech recognition to transcribe your voice messages.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Emori needs microphone access to listen to your voice messages.</string>
 </dict>
 </plist>

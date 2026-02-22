@@ -76,6 +76,13 @@ Return exactly this structure:
         .replaceAll('```json', '')
         .replaceAll('```', '')
         .trim();
+
+    // Extract JSON using regex in case Groq adds conversational padding
+    final jsonMatch = RegExp(r'\{.*\}', dotAll: true).firstMatch(cleaned);
+    if (jsonMatch != null) {
+      return jsonDecode(jsonMatch.group(0)!);
+    }
+
     return jsonDecode(cleaned);
   }
 
@@ -181,7 +188,7 @@ ALWAYS respond with valid JSON ONLY. No markdown, no extra text.
 Return exactly this JSON structure:
 {
   "is_new_memory": true or false,
-  "response_to_user": "Your response to the user. Write this like a caring friend. Keep it short (2-3 sentences max). If it's a new memory, acknowledge it warmly and ask a gentle follow-up question. If it's a question, answer it based ONLY on the provided past context, using bullet points if helpful.",
+  "response_to_user": "Your response to the user. Write this like a caring friend. Keep it short (2-3 sentences max). If it's a new memory, acknowledge it warmly and ALWAYS ask 1-2 thoughtful follow-up questions to understand them better. If it's a question, answer it directly and honestly based ONLY on the provided past context telling them what they want to know. Use bullet points occasionally if helpful.",
   
   // If and ONLY if is_new_memory is true, provide these fields:
   "summary": "2-3 sentence summary of what they shared. Address them as 'you'/'your' (e.g. 'You felt anxious today...'). NO third person.",
@@ -207,6 +214,13 @@ Process this message and return exactly the required JSON.
         .replaceAll('```json', '')
         .replaceAll('```', '')
         .trim();
+
+    // Extract JSON using regex in case Groq adds conversational padding
+    final jsonMatch = RegExp(r'\{.*\}', dotAll: true).firstMatch(cleaned);
+    if (jsonMatch != null) {
+      return jsonDecode(jsonMatch.group(0)!);
+    }
+
     return jsonDecode(cleaned);
   }
 
@@ -251,6 +265,11 @@ What am I not seeing about myself?
 You are Emori, a deeply caring AI best friend who has been listening all week.
 Write a warm, personal weekly reflection like a letter from a best friend
 who truly paid attention to everything shared this week.
+
+IMPORTANT FORMATTING RULES:
+- Use bullet points to highlight key points, patterns, and insights from the week.
+- Keep the structure clean and very easy to read.
+
 Notice what was hard, what was beautiful, what changed, what stayed the same.
 End with one gentle, honest insight they might carry into next week.
 Never be generic. Every word should feel like it was written only for them.

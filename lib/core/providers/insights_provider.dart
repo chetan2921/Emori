@@ -2,6 +2,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import 'entry_provider.dart';
 
+// ─── Emotion Frequency Charting ───────────────────────────────────────────────
+
+final emotionFrequencyProvider = FutureProvider<Map<String, int>>((ref) async {
+  final entries = await AppDatabase.instance.getEntriesFromLastDays(30);
+  final Map<String, int> frequencies = {};
+
+  for (final entry in entries) {
+    for (final emotion in entry.emotions) {
+      final key = emotion.toLowerCase().trim();
+      if (key.isNotEmpty) {
+        frequencies[key] = (frequencies[key] ?? 0) + 1;
+      }
+    }
+  }
+
+  // Sort by frequency descending and take top 5
+  final sortedEntries = frequencies.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  return Map.fromEntries(sortedEntries.take(5));
+});
+
 // ─── Pattern Detection ───────────────────────────────────────────
 
 final patternsProvider = AsyncNotifierProvider<PatternsNotifier, String?>(
