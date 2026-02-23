@@ -43,6 +43,102 @@ class AIService {
     }
   }
 
+  /// Streaming generation — yields tokens as they arrive from Groq SSE.
+  Stream<String> _generateStream(
+    String systemPrompt,
+    String userMessage,
+  ) async* {
+    final request = http.Request('POST', Uri.parse(_baseUrl));
+    request.headers.addAll(_headers);
+    request.body = jsonEncode({
+      'model': _model,
+      'messages': [
+        {'role': 'system', 'content': systemPrompt},
+        {'role': 'user', 'content': userMessage},
+      ],
+      'temperature': 0.7,
+      'max_tokens': 1024,
+      'stream': true,
+    });
+
+    final response = await http.Client().send(request);
+
+    if (response.statusCode != 200) {
+      final body = await response.stream.bytesToString();
+      throw Exception('Groq API error: ${response.statusCode} $body');
+    }
+
+    // Parse SSE stream
+    String buffer = '';
+    await for (final chunk in response.stream.transform(utf8.decoder)) {
+      buffer += chunk;
+      final lines = buffer.split('\n');
+      buffer = lines.removeLast(); // keep incomplete line in buffer
+
+      for (final line in lines) {
+        final trimmed = line.trim();
+        if (trimmed.isEmpty || !trimmed.startsWith('data: ')) continue;
+        final data = trimmed.substring(6);
+        if (data == '[DONE]') return;
+
+        try {
+          final json = jsonDecode(data);
+          final delta = json['choices']?[0]?['delta']?['content'] as String?;
+          if (delta != null && delta.isNotEmpty) {
+            yield delta;
+          }
+        } catch (_) {
+          // Skip malformed JSON chunks
+        }
+      }
+    }
+  }
+
+  // ─── STREAMING CONVERSATION (for voice mode) ───────────────────────────────
+
+  /// Stream a conversational AI response token-by-token.
+  /// Used in voice mode so TTS can start speaking mid-response.
+  Stream<String> respondToUserStream(
+    String rawText, {
+    required List<Map<String, String>> relevantEntries,
+    String? imageDescription,
+  }) {
+    final contextInfo = relevantEntries.isNotEmpty
+        ? relevantEntries
+              .map(
+                (e) =>
+                    'Date: ${e['date']}\nSummary: ${e['summary']}\nThemes: ${e['themes']}\nEmotions: ${e['emotions']}',
+              )
+              .join('\n\n---\n\n')
+        : 'No relevant past entries found.';
+
+    final imageContext = imageDescription != null && imageDescription.isNotEmpty
+        ? '\n\nThe user also attached an image: $imageDescription'
+        : '';
+
+    return _generateStream(
+      '''
+You are Emori, a warm, caring AI best friend — not a therapist, not an assistant.
+Someone is talking to you live via voice. Respond like a real friend would in a voice conversation:
+- Be concise and natural — this will be spoken aloud
+- Keep sentences short and conversational
+- Show genuine warmth and understanding
+- Ask one follow-up question to keep the conversation going
+- No bullet points, no markdown, no emojis — this is a spoken conversation
+- 2-4 sentences max. Keep it brief like a real conversation.
+''',
+      '''
+Here is context from their past entries:
+$contextInfo
+
+They just said:
+"$rawText"$imageContext
+
+Respond naturally as their caring friend.
+''',
+    );
+  }
+
   // ─── 1. SUMMARIZE & TAG ────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> analyzeEntry(
@@ -174,10 +270,30 @@ My question: $userQuestion
               .join('\n\n---\n\n')
         : 'No relevant past entries found.';
 
+    final now = DateTime.now();
+    final currentDate =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final currentTime =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final weekday = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ][now.weekday - 1];
+
     final result = await _generate(
       '''
 You are Emori, a warm, intelligent AI companion that serves as both a memory keeper and a knowing friend.
 You receive messages from the user. Your job is to determine their intent and respond appropriately.
+
+IMPORTANT CONTEXT:
+- Today's date: $currentDate ($weekday)
+- Current time: $currentTime
+- Current year: ${now.year}
 
 There are two possible intents:
 1. NEW MEMORY: The user is sharing something about their life, day, feelings, or thoughts that should be saved as a journal entry. 
@@ -185,18 +301,29 @@ There are two possible intents:
 
 ALWAYS respond with valid JSON ONLY. No markdown, no extra text.
 
+IMPORTANT: If the user mentions ANY future event, important date, deadline, meeting, appointment (e.g., dentist, doctor), birthday, exam, assignment, or asks you to remind them about anything, you MUST extract it as a reminder. Even if `is_new_memory` is false, you must populate the `reminders` array if they mention an event. Convert relative dates like "tomorrow", "next Monday", "in 3 days", "28th February" into ISO format (YYYY-MM-DD) using today's date ($currentDate) as reference.
+
 Return exactly this JSON structure:
 {
   "is_new_memory": true or false,
-  "response_to_user": "Your response to the user. Write this like a caring friend. Keep it short (2-3 sentences max). If it's a new memory, acknowledge it warmly and ALWAYS ask 1-2 thoughtful follow-up questions to understand them better. If it's a question, answer it directly and honestly based ONLY on the provided past context telling them what they want to know. Use bullet points occasionally if helpful.",
+  "response_to_user": "Your response to the user. Write this like a caring friend. Keep it short (2-3 sentences max). If it's a new memory, acknowledge it warmly and ALWAYS ask 1-2 thoughtful follow-up questions to understand them better. If it's a question, answer it directly and honestly based ONLY on the provided past context. If there's a deadline/event, acknowledge it and reassure them you'll remember and remind them.",
   
   // If and ONLY if is_new_memory is true, provide these fields:
-  "summary": "2-3 sentence summary of what they shared. Address them as 'you'/'your' (e.g. 'You felt anxious today...'). NO third person.",
+  "summary": "2-3 sentence summary of what they shared. Address them as 'you'/'your'. NO third person.",
   "emotions": ["emotion1", "emotion2"],
   "life_area": "one of: career, relationships, health, money, identity, growth, other",
   "type": "one of: lesson, feeling, idea, goal, mistake, gratitude, observation",
   "themes": ["theme1", "theme2", "theme3"],
-  "people": ["first names of people mentioned, empty if none"]
+  "people": ["first names of people mentioned, empty if none"],
+  
+  // ALWAYS include this field. Empty array if no dates/events detected.
+  "reminders": [
+    {
+      "title": "Short title for the reminder (e.g. 'Assignment deadline', 'Meeting with Raj')",
+      "description": "Brief description with context",
+      "due_date": "YYYY-MM-DD format. Convert relative dates using today ($currentDate)."
+    }
+  ]
 }
 ''',
       '''

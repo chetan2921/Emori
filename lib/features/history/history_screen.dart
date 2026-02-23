@@ -123,29 +123,34 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back, color: c.textPrimary),
-                    onPressed: () => Navigator.pop(context),
-                    tooltip: 'Back to Chat',
-                  ),
-                  const SizedBox(width: 4),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Your Journey', style: tt.headlineLarge),
-                      const SizedBox(height: 4),
-                      Text(
-                        _selectedDate == null
-                            ? '${entries.length} ${entries.length == 1 ? 'memory' : 'memories'} captured'
-                            : 'Showing memories for ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                        style: tt.bodyMedium,
+              Flexible(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: c.textPrimary),
+                      onPressed: () => Navigator.pop(context),
+                      tooltip: 'Back to Chat',
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Your Journey', style: tt.headlineLarge),
+                          const SizedBox(height: 4),
+                          Text(
+                            _selectedDate == null
+                                ? '${entries.length} ${entries.length == 1 ? 'memory' : 'memories'} captured'
+                                : 'Showing memories for ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                            style: tt.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [

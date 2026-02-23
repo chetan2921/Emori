@@ -24,7 +24,16 @@ final entriesProvider = AsyncNotifierProvider<EntriesNotifier, List<Entry>>(
 class EntriesNotifier extends AsyncNotifier<List<Entry>> {
   @override
   Future<List<Entry>> build() async {
-    return await AppDatabase.instance.getAllEntries();
+    // Initial load, sort by newest first
+    final entries = await AppDatabase.instance.getAllEntries();
+    entries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return entries;
+  }
+
+  /// Clears in-memory entries immediately on logout so they don't flash
+  /// for the next user before their DB loads.
+  void clearEntriesForLogout() {
+    state = const AsyncValue.data([]);
   }
 
   /// Full pipeline — called when user saves an entry.

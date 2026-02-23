@@ -12,6 +12,9 @@ import '../../core/providers/entry_provider.dart';
 import '../history/history_screen.dart';
 import '../insights/pattern_detection_screen.dart';
 import '../insights/weekly_reflection_screen.dart';
+import '../reminders/reminders_screen.dart';
+import '../profile/profile_screen.dart';
+import '../../core/providers/auth_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -71,17 +74,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _speech.stop();
       setState(() => _isListening = false);
     } else {
+      // Stop any ongoing TTS so user can speak
+      final ttsService = ref.read(ttsServiceProvider);
+      await ttsService.stop();
+
       setState(() => _isListening = true);
       await _speech.listen(
-        onResult: (result) => setState(() {
-          _controller.text = result.recognizedWords;
-          _wasLastInputFromMic = true; // Mark as coming from mic
-          _controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: _controller.text.length),
-          );
-        }),
+        onResult: (result) {
+          setState(() {
+            _controller.text = result.recognizedWords;
+            _wasLastInputFromMic = true;
+            _controller.selection = TextSelection.fromPosition(
+              TextPosition(offset: _controller.text.length),
+            );
+          });
+
+          // Auto-send when speech recognition finalizes
+          if (result.finalResult && _controller.text.trim().isNotEmpty) {
+            setState(() => _isListening = false);
+            _sendMessage();
+          }
+        },
         listenFor: const Duration(minutes: 2),
-        pauseFor: const Duration(seconds: 5),
+        pauseFor: const Duration(seconds: 3),
         localeId: 'en_IN',
       );
     }
@@ -212,7 +227,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Builder(
               builder: (ctx) {
-                return _buildHeader(ctx, c);
+                final hasMessages =
+                    messagesAsync.hasValue && messagesAsync.value!.isNotEmpty;
+                return _buildHeader(ctx, c, hasMessages: hasMessages);
               },
             ),
             Divider(height: 1, color: c.border),
@@ -246,7 +263,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             if (messagesAsync.hasValue && messagesAsync.value!.isEmpty)
               _buildSuggestions(c),
-            if (_selectedImages.isNotEmpty) _buildImagePreviews(c),
             _buildInput(c),
           ],
         ),
@@ -261,43 +277,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+            const SizedBox(height: 32),
+            RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Hey, I'm ",
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w400,
+                          color: c.textSecondary,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'Emori',
+                        style: TextStyle(
+                          fontFamily: 'AlexBrush',
+                          fontSize: 38,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Text(
-                      'E',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 36,
-                      ),
-                    ),
-                  ),
-                )
-                .animate()
-                .scale(duration: 500.ms, curve: Curves.easeOutBack)
-                .fadeIn(duration: 500.ms),
-            const SizedBox(height: 32),
-            Text(
-                  "Hey, I'm Emori 💜",
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: c.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
                 )
                 .animate(delay: 100.ms)
                 .slideY(
@@ -342,46 +345,82 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildDrawer(EmoriColors c) {
+    final user = ref.watch(authProvider).user;
+    final userEmail = user?.email ?? '';
+    final userName = userEmail.isNotEmpty ? userEmail.split('@')[0] : 'User';
+    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+
     return Drawer(
       backgroundColor: c.surface,
       child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'E',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          initial,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    'Emori',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: c.textPrimary,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        userName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                    Icon(Icons.chevron_right_rounded, color: c.textHint),
+                  ],
+                ),
               ),
             ),
             const Divider(),
+            _DrawerItem(
+              icon: Icons.add_comment_outlined,
+              label: 'New Chat',
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(chatProvider.notifier).clearChat();
+              },
+            ),
             _DrawerItem(
               icon: Icons.hub_outlined,
               label: 'Pattern Detection',
@@ -391,6 +430,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const PatternDetectionScreen(),
+                  ),
+                );
+              },
+            ),
+            _DrawerItem(
+              icon: Icons.notifications_outlined,
+              label: 'Reminders',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RemindersScreen(),
                   ),
                 );
               },
@@ -408,13 +460,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 );
               },
             ),
+            const Spacer(),
+            _DrawerItem(
+              icon: Icons.person_outline_rounded,
+              label: 'Profile',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, EmoriColors c) {
+  Widget _buildHeader(
+    BuildContext context,
+    EmoriColors c, {
+    bool hasMessages = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       child: Row(
@@ -424,45 +495,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Emori',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: c.textPrimary,
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(right: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.success.withValues(alpha: 0.4),
-                          blurRadius: 4,
+          // Emori title only appears when chat has started
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.3),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
                         ),
-                      ],
-                    ),
+                    child: child,
                   ),
-                  Text(
-                    'Listening...',
-                    style: GoogleFonts.inter(fontSize: 12, color: c.textHint),
-                  ),
-                ],
-              ),
-            ],
+                );
+              },
+              child: hasMessages
+                  ? Text(
+                      'Emori',
+                      key: const ValueKey('emori-header'),
+                      style: TextStyle(
+                        fontFamily: 'AlexBrush',
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty-header')),
+            ),
           ),
-          const Spacer(),
           IconButton(
-            icon: Icon(Icons.auto_stories_outlined, color: AppColors.primary),
+            icon: Icon(Icons.auto_stories_outlined, color: c.textPrimary),
             onPressed: () {
               Navigator.push(
                 context,
@@ -525,169 +597,179 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildImagePreviews(EmoriColors c) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: SizedBox(
-        height: 90,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _selectedImages.length,
-          itemBuilder: (context, index) {
-            return Stack(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(right: 10),
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    image: DecorationImage(
-                      image: FileImage(_selectedImages[index]),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 4,
-                  right: 14,
-                  child: GestureDetector(
-                    onTap: () =>
-                        setState(() => _selectedImages.removeAt(index)),
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(
-                        color: Colors.black54,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildInput(EmoriColors c) {
     return Container(
       padding: EdgeInsets.fromLTRB(
         12,
         10,
         12,
-        MediaQuery.of(context).padding.bottom +
-            12, // Reduced padding since no nav bar
+        MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
         color: c.surface,
         border: Border(top: BorderSide(color: c.border)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Image button
-          GestureDetector(
-            onTap: _showImagePicker,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.sage.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                Icons.image_outlined,
-                color: AppColors.primary,
-                size: 22,
+          // ─── Image previews (inside the input area) ──────
+          if (_selectedImages.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              height: 64,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _selectedImages.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: c.border, width: 1),
+                          image: DecorationImage(
+                            image: FileImage(_selectedImages[index]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: -4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedImages.removeAt(index)),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: c.textSecondary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-          ),
-          const SizedBox(width: 8),
 
-          // Mic button
-          GestureDetector(
-            onTap: _toggleListening,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _isListening
-                    ? AppColors.coral
-                    : AppColors.sage.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: _isListening
-                    ? [AppShadows.colored(AppColors.coral)]
-                    : [],
-              ),
-              child: Icon(
-                _isListening ? Icons.stop_rounded : Icons.mic_rounded,
-                color: _isListening ? Colors.white : AppColors.primary,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // Text field
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: c.surfaceVariant,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: TextField(
-                controller: _controller,
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
-                style: GoogleFonts.inter(fontSize: 15, color: c.textPrimary),
-                decoration: InputDecoration(
-                  hintText: "What's on your mind?",
-                  hintStyle: GoogleFonts.inter(color: c.textHint, fontSize: 14),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
+          // ─── Input row ───────────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Image button
+              GestureDetector(
+                onTap: _showImagePicker,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.sage.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
                 ),
-                onChanged: (val) {
-                  // If they start typing manually, disable TTS for this turn
-                  if (_wasLastInputFromMic) {
-                    setState(() {
-                      _wasLastInputFromMic = false;
-                    });
-                  }
-                },
-                onSubmitted: (_) => _sendMessage(),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
+              const SizedBox(width: 6),
 
-          // Send button
-          GestureDetector(
-            onTap: _sendMessage,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(14),
+              // Mic button
+              GestureDetector(
+                onTap: _toggleListening,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _isListening
+                        ? AppColors.coral
+                        : AppColors.sage.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: _isListening
+                        ? [AppShadows.colored(AppColors.coral)]
+                        : [],
+                  ),
+                  child: Icon(
+                    _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                    color: _isListening ? Colors.white : AppColors.primary,
+                    size: 18,
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.arrow_upward_rounded,
-                color: Colors.white,
-                size: 20,
+              const SizedBox(width: 6),
+
+              // Text field
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: c.surfaceVariant,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: TextField(
+                    controller: _controller,
+                    maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: c.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Share anything...',
+                      hintStyle: GoogleFonts.inter(
+                        color: c.textHint,
+                        fontSize: 14,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    onChanged: (val) {
+                      if (_wasLastInputFromMic) {
+                        setState(() {
+                          _wasLastInputFromMic = false;
+                        });
+                      }
+                    },
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 6),
+
+              // Send button
+              GestureDetector(
+                onTap: _sendMessage,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_upward_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -919,7 +1001,20 @@ class _RotatingText extends StatefulWidget {
 
 class _RotatingTextState extends State<_RotatingText> {
   int _currentIndex = 0;
-  final List<String> _words = ['Ask', 'Gossip', 'Discuss', 'Chat'];
+  final List<Map<String, String>> _phrases = [
+    {'highlight': 'Ask', 'suffix': ' me anything'},
+    {'highlight': 'Vent', 'suffix': ' without judgement'},
+    {'highlight': 'Gossip', 'suffix': ' like a bestie'},
+    {'highlight': 'Reflect', 'suffix': ' on your day'},
+    {'highlight': 'Discover', 'suffix': ' your patterns'},
+    {'highlight': 'Chat', 'suffix': ' as a friend'},
+    {'highlight': 'Unload', 'suffix': ' what\'s heavy'},
+    {'highlight': 'Remember', 'suffix': ' everything'},
+    {'highlight': 'Track', 'suffix': ' your emotions'},
+    {'highlight': 'Explore', 'suffix': ' your thoughts'},
+    {'highlight': 'Share', 'suffix': ' your wins'},
+    {'highlight': 'Process', 'suffix': ' the hard stuff'},
+  ];
 
   @override
   void initState() {
@@ -928,10 +1023,10 @@ class _RotatingTextState extends State<_RotatingText> {
   }
 
   void _startRotation() {
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
       setState(() {
-        _currentIndex = (_currentIndex + 1) % _words.length;
+        _currentIndex = (_currentIndex + 1) % _phrases.length;
       });
       _startRotation();
     });
@@ -940,16 +1035,21 @@ class _RotatingTextState extends State<_RotatingText> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return SlideTransition(
+    final phrase = _phrases[_currentIndex];
+
+    return SizedBox(
+      width: double.infinity,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
               position:
                   Tween<Offset>(
-                    begin: const Offset(0.0, 0.5),
+                    begin: const Offset(0.0, 0.4),
                     end: Offset.zero,
                   ).animate(
                     CurvedAnimation(
@@ -957,28 +1057,35 @@ class _RotatingTextState extends State<_RotatingText> {
                       curve: Curves.easeOutCubic,
                     ),
                   ),
-              child: FadeTransition(opacity: animation, child: child),
-            );
-          },
-          child: Text(
-            _words[_currentIndex],
-            key: ValueKey<int>(_currentIndex),
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+              child: child,
             ),
+          );
+        },
+        child: RichText(
+          key: ValueKey<int>(_currentIndex),
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: phrase['highlight']!,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              TextSpan(
+                text: phrase['suffix']!,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: c.textPrimary,
+                ),
+              ),
+            ],
           ),
         ),
-        Text(
-          ' as a friend',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: c.textPrimary,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
