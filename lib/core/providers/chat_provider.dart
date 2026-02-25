@@ -221,6 +221,9 @@ class ChatNotifier extends AsyncNotifier<List<ChatMessage>> {
         createdAt: DateTime.now(),
       );
       await AppDatabase.instance.insertEntry(entry);
+
+      // Refresh entries provider so it appears in the History screen immediately
+      ref.read(entriesProvider.notifier).refresh();
     } catch (e) {
       debugPrint('Failed to save memory: $e');
     }

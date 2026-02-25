@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 
 // ─── Brand Colors (same in both modes) ───────────────────────────
 
@@ -203,48 +203,75 @@ class AppTheme {
   }
 
   static TextTheme _textTheme(EmoriColors c) => TextTheme(
-    displayLarge: GoogleFonts.poppins(
+    displayLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 28,
       fontWeight: FontWeight.w700,
       color: c.textPrimary,
       letterSpacing: -0.5,
     ),
-    headlineLarge: GoogleFonts.poppins(
+    headlineLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 24,
       fontWeight: FontWeight.w600,
       color: c.textPrimary,
     ),
-    headlineMedium: GoogleFonts.poppins(
+    headlineMedium: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 20,
       fontWeight: FontWeight.w600,
       color: c.textPrimary,
     ),
-    titleLarge: GoogleFonts.poppins(
+    titleLarge: TextStyle(
+      fontFamily: 'PlusJakartaSans',
       fontSize: 18,
       fontWeight: FontWeight.w500,
       color: c.textPrimary,
     ),
-    bodyLarge: GoogleFonts.inter(
+    bodyLarge: TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 16,
       fontWeight: FontWeight.w400,
       color: c.textPrimary,
       height: 1.6,
     ),
-    bodyMedium: GoogleFonts.inter(
+    bodyMedium: TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 14,
       fontWeight: FontWeight.w400,
       color: c.textSecondary,
     ),
-    bodySmall: GoogleFonts.inter(
+    bodySmall: TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 12,
       fontWeight: FontWeight.w400,
       color: c.textHint,
     ),
-    labelSmall: GoogleFonts.inter(
+    labelSmall: TextStyle(
+      fontFamily: 'Nunito',
       fontSize: 11,
       fontWeight: FontWeight.w600,
       color: c.textHint,
       letterSpacing: 0.8,
     ),
   );
+}
+
+class AppTextStyles {
+  AppTextStyles._();
+
+  static TextStyle emoriTitle({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    FontStyle? fontStyle,
+  }) {
+    return TextStyle(
+      fontFamily: 'AlexBrush',
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      fontStyle: fontStyle,
+    );
+  }
 }

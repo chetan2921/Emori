@@ -47,8 +47,8 @@ class ReminderService {
     }
   }
 
-  /// Schedule a notification for a specific reminder.
-  /// Schedules at 9 AM on the day before the due date.
+  /// Schedule a notification for a specific reminder at its exact exact due date.
+  /// Also schedules a pre-reminder the day before at 9 AM if applicable.
   Future<void> _scheduleReminderNotification(Reminder reminder) async {
     final dueDate = reminder.dueDate;
     final now = DateTime.now();
@@ -61,13 +61,8 @@ class ReminderService {
       9, // 9 AM
     );
 
-    // Also schedule for the morning of (9 AM)
-    final dayOf = DateTime(
-      dueDate.year,
-      dueDate.month,
-      dueDate.day,
-      9, // 9 AM
-    );
+    // Exact time
+    final exactTime = dueDate;
 
     final notifId = reminder.id.hashCode.abs() % 10000 + _reminderIdOffset;
 
@@ -83,17 +78,27 @@ class ReminderService {
       );
     }
 
-    // Schedule day-of notification if it's still in the future
-    if (dayOf.isAfter(now)) {
+    // Schedule exact time notification if it's still in the future
+    if (exactTime.isAfter(now)) {
+      final timeStr = _formatTime(exactTime);
       await _notifications.zonedSchedule(
         id: notifId + 50000,
-        title: '⏰ Today: ${reminder.title}',
+        title: '⏰ $timeStr: ${reminder.title}',
         body: reminder.description,
-        scheduledDate: tz.TZDateTime.from(dayOf, tz.local),
+        scheduledDate: tz.TZDateTime.from(exactTime, tz.local),
         notificationDetails: _reminderNotificationDetails(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
     }
+  }
+
+  String _formatTime(DateTime dt) {
+    int h = dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final p = h >= 12 ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h == 0) h = 12;
+    return '$h:$m $p';
   }
 
   /// Send an immediate notification for an urgent reminder.
@@ -124,7 +129,11 @@ class ReminderService {
         importance: Importance.max,
         priority: Priority.high,
       ),
-      iOS: DarwinNotificationDetails(),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
   }
 
@@ -143,12 +152,9 @@ class ReminderService {
         final dueDate = _parseDate(dateStr);
         if (dueDate == null) continue;
 
-        // Don't create reminders for past dates (compare just the calendar day)
+        // Skip if exact due date has already passed
         final now = DateTime.now();
-        final today = DateTime(now.year, now.month, now.day);
-        final dueDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
-
-        if (dueDay.isBefore(today)) continue;
+        if (dueDate.isBefore(now)) continue;
 
         final reminder = Reminder(
           id: const Uuid().v4(),
@@ -172,17 +178,18 @@ class ReminderService {
   /// Parse an ISO date string or common date formats.
   DateTime? _parseDate(String dateStr) {
     try {
+      // First try to parse exact datetime (e.g., "2026-02-28 14:30:00")
       return DateTime.parse(dateStr);
     } catch (_) {
-      // Try common formats like "28 February 2026" or "2026-02-28"
       try {
-        // Try basic ISO
-        final parts = dateStr.split('-');
+        // Fallback for just date "2026-02-28", defaulting to 9:00 AM
+        final parts = dateStr.split(' ')[0].split('-');
         if (parts.length == 3) {
           return DateTime(
             int.parse(parts[0]),
             int.parse(parts[1]),
             int.parse(parts[2]),
+            9, // Default to 9 AM if no time component exists
           );
         }
       } catch (_) {}

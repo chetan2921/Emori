@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/entry.dart';
@@ -91,7 +91,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Text('Your story starts here', style: tt.headlineMedium),
+          Text(
+            'Your story starts here',
+            style: tt.headlineLarge?.copyWith(
+              color: context.colors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           Text(
             'Share something with Emori\nand it will appear here.',
@@ -182,7 +187,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: Center(
               child: Text(
                 'No memories on this date.',
-                style: GoogleFonts.inter(color: c.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
               ),
             ),
           )
@@ -211,7 +216,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     childrenPadding: const EdgeInsets.symmetric(horizontal: 24),
                     title: Text(
                       groupLabel,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
+                        fontFamily: 'PlusJakartaSans',
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: c.textHint,
@@ -335,28 +341,30 @@ class _EntryCard extends ConsumerWidget {
           ),
           title: Text(
             'Delete this memory?',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
+              fontFamily: 'PlusJakartaSans',
               fontWeight: FontWeight.w600,
               color: c.textPrimary,
             ),
           ),
           content: Text(
             'This entry will be permanently removed.',
-            style: GoogleFonts.inter(color: c.textSecondary),
+            style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.inter(color: c.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(
                 'Delete',
-                style: GoogleFonts.inter(
+                style: TextStyle(
+                  fontFamily: 'Nunito',
                   color: AppColors.error,
                   fontWeight: FontWeight.w600,
                 ),
@@ -385,7 +393,8 @@ class _EntryCard extends ConsumerWidget {
                   const SizedBox(width: 5),
                   Text(
                     entry.type.toUpperCase(),
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: AppColors.teal,
@@ -395,7 +404,11 @@ class _EntryCard extends ConsumerWidget {
                   const Spacer(),
                   Text(
                     _timeOnly(entry.createdAt),
-                    style: GoogleFonts.inter(fontSize: 11, color: c.textHint),
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 11,
+                      color: c.textHint,
+                    ),
                   ),
                 ],
               ),
@@ -429,7 +442,8 @@ class _EntryCard extends ConsumerWidget {
 
               Text(
                 displaySummary,
-                style: GoogleFonts.inter(
+                style: TextStyle(
+                  fontFamily: 'Nunito',
                   fontSize: 13,
                   height: 1.6,
                   color: c.textPrimary,
@@ -455,7 +469,8 @@ class _EntryCard extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Text(
                             e,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
                               fontSize: 12,
                               color: c.textSecondary,
                             ),

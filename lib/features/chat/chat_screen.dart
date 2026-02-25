@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -60,7 +60,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             SnackBar(
               content: Text(
                 'Speech recognition is not available or permissions were denied.',
-                style: GoogleFonts.inter(),
+                style: TextStyle(fontFamily: 'Nunito'),
               ),
               backgroundColor: AppColors.coral,
             ),
@@ -158,7 +158,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             const SizedBox(height: 20),
             Text(
               'Add a photo',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: c.textPrimary,
@@ -284,7 +285,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     children: [
                       TextSpan(
                         text: "Hey, I'm ",
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
                           fontSize: 24,
                           fontWeight: FontWeight.w400,
                           color: c.textSecondary,
@@ -292,8 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                       TextSpan(
                         text: 'Emori',
-                        style: TextStyle(
-                          fontFamily: 'AlexBrush',
+                        style: AppTextStyles.emoriTitle(
                           fontSize: 38,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary,
@@ -323,7 +324,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             const SizedBox(height: 16),
             Text(
                   "I remember everything you've shared with me. Ask me anything about your life — your patterns, your feelings, what you've been going through. I'm here.",
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 16,
                     color: c.textSecondary,
                     height: 1.6,
@@ -386,7 +388,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       child: Center(
                         child: Text(
                           initial,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
+                            fontFamily: 'PlusJakartaSans',
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
@@ -398,7 +401,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     Expanded(
                       child: Text(
                         userName,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
+                          fontFamily: 'PlusJakartaSans',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: c.textPrimary,
@@ -460,21 +464,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 );
               },
             ),
-            const Spacer(),
-            _DrawerItem(
-              icon: Icons.person_outline_rounded,
-              label: 'Profile',
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -523,9 +512,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ? Text(
                       'Emori',
                       key: const ValueKey('emori-header'),
-                      style: TextStyle(
-                        fontFamily: 'AlexBrush',
-                        fontSize: 32,
+                      style: AppTextStyles.emoriTitle(
+                        fontSize: 38,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
                       ),
@@ -582,7 +570,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     child: Text(
                       suggestions[i],
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: c.textPrimary,
@@ -723,13 +712,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     controller: _controller,
                     maxLines: null,
                     textCapitalization: TextCapitalization.sentences,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 15,
                       color: c.textPrimary,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Share anything...',
-                      hintStyle: GoogleFonts.inter(
+                      hintStyle: TextStyle(
+                        fontFamily: 'Nunito',
                         color: c.textHint,
                         fontSize: 14,
                       ),
@@ -811,7 +802,8 @@ class _MessageBubble extends StatelessWidget {
               child: Center(
                 child: Text(
                   'E',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
@@ -844,7 +836,8 @@ class _MessageBubble extends StatelessWidget {
                   ? const _ThinkingDots()
                   : Text(
                       message.text,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
                         fontSize: 14,
                         height: 1.6,
                         color: isUser ? Colors.white : c.textPrimary,
@@ -942,7 +935,8 @@ class _PickerOption extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: c.textPrimary,
@@ -979,7 +973,8 @@ class _DrawerItem extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: c.textPrimary,
@@ -1068,7 +1063,8 @@ class _RotatingTextState extends State<_RotatingText> {
             children: [
               TextSpan(
                 text: phrase['highlight']!,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: 'PlusJakartaSans',
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -1076,7 +1072,8 @@ class _RotatingTextState extends State<_RotatingText> {
               ),
               TextSpan(
                 text: phrase['suffix']!,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: 'PlusJakartaSans',
                   fontSize: 20,
                   fontWeight: FontWeight.w500,
                   color: c.textPrimary,

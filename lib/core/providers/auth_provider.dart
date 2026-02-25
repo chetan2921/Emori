@@ -44,9 +44,10 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
   }
 
   Future<void> _init() async {
-    // Check current session
+    // Check current session synchronously first to avoid flash
     final user = _authService.currentUser;
     if (user != null) {
+      // We know who the user is, initialize DB before updating state
       await AppDatabase.instance.initForUser(user.id);
       state = AppAuthState(status: AuthStatus.authenticated, user: user);
     } else {
@@ -56,16 +57,22 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
 
     // Listen for auth changes
     _sub = _authService.onAuthStateChange.listen((authState) async {
+      // Don't update state immediately if it's the initial event
+      // Supabase fires an initial event which might conflict with our manual check above
       final session = authState.session;
       if (session != null) {
         await AppDatabase.instance.initForUser(session.user.id);
-        state = AppAuthState(
-          status: AuthStatus.authenticated,
-          user: session.user,
-        );
+        if (mounted) {
+          state = AppAuthState(
+            status: AuthStatus.authenticated,
+            user: session.user,
+          );
+        }
       } else {
         await AppDatabase.instance.closeAndReset();
-        state = const AppAuthState(status: AuthStatus.unauthenticated);
+        if (mounted) {
+          state = const AppAuthState(status: AuthStatus.unauthenticated);
+        }
       }
     });
   }
@@ -73,10 +80,29 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
   /// Sign up with email and password.
   Future<bool> signUp({required String email, required String password}) async {
     try {
-      await _authService.signUp(email: email, password: password);
+      final response = await _authService.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.session == null) {
+        // If session is null, Supabase requires email confirmation
+        state = state.copyWith(
+          errorMessage:
+              'Account created! Please check your email ($email) to verify your account before signing in.',
+        );
+        return false;
+      }
+
       return true;
     } on supa.AuthException catch (e) {
-      state = state.copyWith(errorMessage: e.message);
+      if (e.message.contains('already registered')) {
+        state = state.copyWith(
+          errorMessage: 'An account with this email already exists.',
+        );
+      } else {
+        state = state.copyWith(errorMessage: e.message);
+      }
       return false;
     } catch (e) {
       state = state.copyWith(errorMessage: 'Something went wrong. Try again.');
@@ -90,7 +116,17 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
       await _authService.signIn(email: email, password: password);
       return true;
     } on supa.AuthException catch (e) {
-      state = state.copyWith(errorMessage: e.message);
+      if (e.message.toLowerCase().contains('invalid login credentials')) {
+        state = state.copyWith(
+          errorMessage: 'Incorrect email or password. Please try again.',
+        );
+      } else if (e.message.toLowerCase().contains('email not confirmed')) {
+        state = state.copyWith(
+          errorMessage: 'Please verify your email address before signing in.',
+        );
+      } else {
+        state = state.copyWith(errorMessage: e.message);
+      }
       return false;
     } catch (e) {
       state = state.copyWith(errorMessage: 'Something went wrong. Try again.');

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
@@ -47,28 +47,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           title: Text(
             'Sign Out',
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               fontWeight: FontWeight.w600,
               color: c.textPrimary,
             ),
           ),
           content: Text(
             'Are you sure you want to sign out?',
-            style: GoogleFonts.inter(color: c.textSecondary),
+            style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.inter(color: c.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(
                 'Sign Out',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Nunito', 
                   color: AppColors.error,
                   fontWeight: FontWeight.w600,
                 ),
@@ -99,21 +99,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           title: Text(
             'Delete All Data?',
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               fontWeight: FontWeight.w600,
               color: AppColors.error,
             ),
           ),
           content: Text(
             'This will permanently delete all your memories, chats, and reminders from this device. This cannot be undone.',
-            style: GoogleFonts.inter(color: c.textSecondary, height: 1.5),
+            style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary, height: 1.5),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.inter(color: c.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
               ),
             ),
             ElevatedButton(
@@ -127,7 +127,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               child: Text(
                 'Delete Forever',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -177,7 +177,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(width: 4),
                   Text(
                     'Profile',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'PlusJakartaSans', 
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: c.textPrimary,
@@ -226,7 +226,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           child: Center(
                             child: Text(
                               user?.email?.substring(0, 1).toUpperCase() ?? 'E',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(fontFamily: 'PlusJakartaSans', 
                                 fontSize: 32,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
@@ -237,7 +237,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         Text(
                           user?.email?.split('@')[0] ?? 'Unknown User',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(fontFamily: 'PlusJakartaSans', 
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: c.textPrimary,
@@ -262,7 +262,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 32),
                   Text(
                     'Account',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'PlusJakartaSans', 
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: c.textSecondary,
@@ -291,7 +291,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 32),
                   Text(
                     'Support',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'PlusJakartaSans', 
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: c.textSecondary,
@@ -332,7 +332,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'Sign Out',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(fontFamily: 'PlusJakartaSans', 
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -361,7 +361,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         else
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: context.colors.textPrimary,
@@ -370,7 +370,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Nunito', 
             fontSize: 13,
             color: context.colors.textHint,
           ),
@@ -419,7 +419,7 @@ class _SettingsTile extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Nunito', 
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: itemColor,

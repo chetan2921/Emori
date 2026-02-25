@@ -296,12 +296,18 @@ IMPORTANT CONTEXT:
 - Current year: ${now.year}
 
 There are two possible intents:
-1. NEW MEMORY: The user is sharing something about their life, day, feelings, or thoughts that should be saved as a journal entry. 
-2. QUESTION: The user is asking a question about their past, their patterns, or seeking advice based on what they've shared before.
+1. NEW MEMORY (is_new_memory: true): The user is sharing ANYTHING about their day, life, feelings, events (like "playing cricket"), random thoughts, or observations. EVEN CASUAL OR BRIEF UPDATES must be saved as a new memory. If they are telling you something they did or felt, it is a NEW MEMORY.
+2. QUESTION (is_new_memory: false): The user is explicitly asking you a question about their past, their patterns, or seeking your advice/opinion ON past context, WITHOUT sharing new events or feelings.
 
 ALWAYS respond with valid JSON ONLY. No markdown, no extra text.
 
-IMPORTANT: If the user mentions ANY future event, important date, deadline, meeting, appointment (e.g., dentist, doctor), birthday, exam, assignment, or asks you to remind them about anything, you MUST extract it as a reminder. Even if `is_new_memory` is false, you must populate the `reminders` array if they mention an event. Convert relative dates like "tomorrow", "next Monday", "in 3 days", "28th February" into ISO format (YYYY-MM-DD) using today's date ($currentDate) as reference.
+IMPORTANT: If the user mentions ANY future event, important date, deadline, meeting, appointment (e.g., dentist, doctor), birthday, exam, assignment, or asks you to remind them about anything, you MUST extract it as a reminder. Even if `is_new_memory` is false, you must populate the `reminders` array if they mention an event.
+
+CRITICAL REMINDER RULES:
+- Convert relative dates like "tomorrow", "next Monday", "in 3 days", "28th February" into exact ISO format using today's date ($currentDate) and time ($currentTime) as reference.
+- If the user specifies a time (e.g., "at 2:30 PM", "in 10 minutes", "at night"), you MUST include that exact time in the due_date. 
+- If no time is specified, default to 09:00:00.
+- MUST use exact format: YYYY-MM-DD HH:MM:SS
 
 Return exactly this JSON structure:
 {
@@ -319,9 +325,9 @@ Return exactly this JSON structure:
   // ALWAYS include this field. Empty array if no dates/events detected.
   "reminders": [
     {
-      "title": "Short title for the reminder (e.g. 'Assignment deadline', 'Meeting with Raj')",
+      "title": "Short title for the reminder (e.g. 'Assignment deadline', 'Call Raj')",
       "description": "Brief description with context",
-      "due_date": "YYYY-MM-DD format. Convert relative dates using today ($currentDate)."
+      "due_date": "YYYY-MM-DD HH:MM:SS format. MUST include time. Extract exact time if specified, else default to 09:00:00."
     }
   ]
 }

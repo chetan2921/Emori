@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/insights_provider.dart';
@@ -21,7 +21,7 @@ class WeeklyReflectionScreen extends ConsumerWidget {
         leading: const BackButton(),
         title: Text(
           'Weekly Reflection',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 18),
+          style: TextStyle(fontFamily: 'PlusJakartaSans', fontWeight: FontWeight.w600, fontSize: 18),
         ),
       ),
       body: SafeArea(
@@ -54,7 +54,7 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
                         Text(
                           'What is a Weekly Reflection?',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(fontFamily: 'PlusJakartaSans', 
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: c.textPrimary,
@@ -63,7 +63,7 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           "Receive a personalized letter from Emori summarizing your entire week based on what you've shared. Emori reflects on what was difficult, what was beautiful, and offers a gentle, honest insight that you can carry with you into the next week. It's a moment to pause and appreciate your progress.",
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Nunito', 
                             fontSize: 14,
                             color: c.textSecondary,
                             height: 1.6,
@@ -153,7 +153,7 @@ class _InsightCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'PlusJakartaSans', 
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: c.textPrimary,
@@ -161,7 +161,7 @@ class _InsightCard extends StatelessWidget {
                       ),
                       Text(
                         subtitle,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Nunito', 
                           fontSize: 12,
                           color: c.textHint,
                         ),
@@ -183,7 +183,7 @@ class _InsightCard extends StatelessWidget {
                   children: [
                     Text(
                       result,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Nunito', 
                         fontSize: 13,
                         height: 1.7,
                         color: c.textPrimary,
@@ -203,7 +203,7 @@ class _InsightCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           Text(
                             'Regenerate',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Nunito', 
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: AppColors.teal,
@@ -220,7 +220,7 @@ class _InsightCard extends StatelessWidget {
                 children: [
                   Text(
                     'Something went wrong. Try again.',
-                    style: GoogleFonts.inter(color: AppColors.error),
+                    style: TextStyle(fontFamily: 'Nunito', color: AppColors.error),
                   ),
                   const SizedBox(height: 10),
                   _buildButton(),
@@ -247,7 +247,7 @@ class _InsightCard extends StatelessWidget {
         child: Center(
           child: Text(
             buttonLabel,
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -283,7 +283,7 @@ class _InsightCard extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Emori is thinking...',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Nunito', 
             fontSize: 12,
             color: AppColors.teal,
             fontStyle: FontStyle.italic,

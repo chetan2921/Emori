@@ -31,7 +31,7 @@ dependencies:
   uuid: ^4.4.0
 
   # Typography
-  google_fonts: ^6.2.1
+  # google_fonts: ^6.2.1 (removed)
 
   # Animations
   flutter_animate: ^4.5.2
@@ -42,6 +42,7 @@ dependencies:
   # Image support
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  flutter_svg: ^2.0.10
 
   # Encryption
   encrypt: ^5.0.3
@@ -60,19 +61,54 @@ dependencies:
 
   # Onboarding
   smooth_page_indicator: ^1.2.0+3
+  flutter_timezone: ^5.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/emori_icon2.svg.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
 
   assets:
     - .env
-
+    - assets/icons/
   fonts:
     - family: AlexBrush
       fonts:
         - asset: assets/fonts/Alex_Brush/AlexBrush-Regular.ttf
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/Plus_Jakarta_Sans/static/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/Plus_Jakarta_Sans/static/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Plus_Jakarta_Sans/static/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Plus_Jakarta_Sans/static/PlusJakartaSans-Bold.ttf
+          weight: 700
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito/static/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito/static/Nunito-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Nunito/static/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito/static/Nunito-Bold.ttf
+          weight: 700
+    - family: PlayfairDisplay
+      fonts:
+        - asset: assets/fonts/Playfair_Display/static/PlayfairDisplay-Regular.ttf
+        - asset: assets/fonts/Playfair_Display/static/PlayfairDisplay-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Playfair_Display/static/PlayfairDisplay-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Playfair_Display/static/PlayfairDisplay-Bold.ttf
+          weight: 700

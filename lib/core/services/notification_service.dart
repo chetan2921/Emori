@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:io';
@@ -14,6 +15,8 @@ class NotificationService {
 
   Future<void> initialize() async {
     tz.initializeTimeZones();
+    final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -44,6 +47,8 @@ class NotificationService {
     Future.delayed(const Duration(seconds: 2), () async {
       await _requestPermissions();
       await _schedulePeriodicNotifications();
+
+      // Test notification disabled. Periodic notifications will continue as scheduled.
     });
   }
 
@@ -175,5 +180,27 @@ class NotificationService {
       );
     }
     return scheduledDate;
+  }
+
+  Future<void> showTestNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'test_channel',
+          'Test Notifications',
+          channelDescription: 'Channel for testing notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: DarwinNotificationDetails(),
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id: 999,
+      title: 'Test Notification 🚀',
+      body: 'This is a trial run! Your notifications are working perfectly.',
+      notificationDetails: platformChannelSpecifics,
+    );
   }
 }

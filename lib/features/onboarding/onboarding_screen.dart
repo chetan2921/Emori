@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_theme.dart';
-import '../auth/login_screen.dart';
+import '../../core/router/app_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -20,6 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _slides = [
     _SlideData(
       icon: Icons.favorite_rounded,
+      isIcon: false,
       color: AppColors.primary,
       title: 'Your Emotional\nCompanion',
       subtitle:
@@ -32,6 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _SlideData(
       icon: Icons.psychology_rounded,
+      isIcon: true,
       color: AppColors.coral,
       title: 'Your AI\nSecond Brain',
       subtitle:
@@ -44,6 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _SlideData(
       icon: Icons.insights_rounded,
+      isIcon: true,
       color: AppColors.teal,
       title: 'Discover Your\nPatterns',
       subtitle:
@@ -63,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const LoginScreen(),
+        pageBuilder: (_, __, ___) => const AppRouter(),
         transitionsBuilder: (_, a, __, child) =>
             FadeTransition(opacity: a, child: child),
         transitionDuration: const Duration(milliseconds: 400),
@@ -96,7 +100,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPressed: _completeOnboarding,
                   child: Text(
                     'Skip',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: c.textHint,
@@ -163,7 +168,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       child: Text(
                         isLastPage ? 'Get Started' : 'Next',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
+                          fontFamily: 'PlusJakartaSans',
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
@@ -184,6 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _SlideData {
   final IconData icon;
+  final bool isIcon;
   final Color color;
   final String title;
   final String subtitle;
@@ -191,6 +198,7 @@ class _SlideData {
 
   const _SlideData({
     required this.icon,
+    this.isIcon = true,
     required this.color,
     required this.title,
     required this.subtitle,
@@ -232,7 +240,18 @@ class _SlideView extends StatelessWidget {
                     width: 1.5,
                   ),
                 ),
-                child: Icon(slide.icon, size: 52, color: slide.color),
+                child: slide.isIcon
+                    ? Icon(slide.icon, size: 52, color: slide.color)
+                    : Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/emori_icon2.svg',
+                          colorFilter: ColorFilter.mode(
+                            slide.color,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
               )
               .animate()
               .fadeIn(duration: 500.ms)
@@ -249,7 +268,8 @@ class _SlideView extends StatelessWidget {
           Text(
                 slide.title,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: 'PlusJakartaSans',
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,
@@ -267,7 +287,8 @@ class _SlideView extends StatelessWidget {
           Text(
                 slide.subtitle,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: TextStyle(
+                  fontFamily: 'Nunito',
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   color: colors.textSecondary,
@@ -288,7 +309,8 @@ class _SlideView extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
                     feature,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: colors.textPrimary,

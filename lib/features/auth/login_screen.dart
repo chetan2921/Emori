@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/auth_provider.dart';
-import '../chat/chat_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,17 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success) {
-      Navigator.of(context).pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const ChatScreen(),
-          transitionsBuilder: (_, a, __, child) =>
-              FadeTransition(opacity: a, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-        (route) => false,
-      );
-    } else {
+    if (!success) {
       final error = ref.read(authProvider).errorMessage;
       if (error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -87,17 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success) {
-      Navigator.of(context).pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const ChatScreen(),
-          transitionsBuilder: (_, a, __, child) =>
-              FadeTransition(opacity: a, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-        (route) => false,
-      );
-    } else {
+    if (!success) {
       final error = ref.read(authProvider).errorMessage;
       if (error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,16 +119,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           gradient: AppColors.primaryGradient,
                           boxShadow: [AppShadows.colored(AppColors.primary)],
                         ),
-                        child: const Icon(
-                          Icons.favorite_rounded,
-                          size: 34,
-                          color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SvgPicture.asset(
+                            'assets/icons/emori_icon2.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
                       Text(
                         'Welcome to Emori',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
+                          fontFamily: 'PlusJakartaSans',
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                           color: c.textPrimary,
@@ -160,7 +146,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _isLogin
                             ? 'Sign in to continue your journey'
                             : 'Create an account to get started',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
                           fontSize: 15,
                           color: c.textSecondary,
                         ),
@@ -262,7 +249,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : Text(
                           _isLogin ? 'Sign In' : 'Create Account',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
+                            fontFamily: 'PlusJakartaSans',
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                           ),
@@ -280,7 +268,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'or',
-                      style: GoogleFonts.inter(fontSize: 13, color: c.textHint),
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 13,
+                        color: c.textHint,
+                      ),
                     ),
                   ),
                   Expanded(child: Divider(color: c.divider)),
@@ -313,7 +305,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   label: Text(
                     'Continue with Google',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: c.textPrimary,
@@ -332,7 +325,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     _isLogin
                         ? 'Don\'t have an account? '
                         : 'Already have an account? ',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 14,
                       color: c.textSecondary,
                     ),
@@ -344,7 +338,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     child: Text(
                       _isLogin ? 'Sign Up' : 'Sign In',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
@@ -395,7 +390,8 @@ class _StyledTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(
+            fontFamily: 'Nunito',
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: colors.textSecondary,
@@ -408,10 +404,18 @@ class _StyledTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           validator: validator,
-          style: GoogleFonts.inter(fontSize: 15, color: colors.textPrimary),
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 15,
+            color: colors.textPrimary,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(fontSize: 15, color: colors.textHint),
+            hintStyle: TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 15,
+              color: colors.textHint,
+            ),
             prefixIcon: Icon(icon, size: 20, color: colors.textHint),
             suffixIcon: suffixIcon,
             filled: true,

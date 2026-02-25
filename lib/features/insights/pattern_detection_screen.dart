@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../core/theme/app_theme.dart';
@@ -22,7 +22,7 @@ class PatternDetectionScreen extends ConsumerWidget {
         leading: const BackButton(),
         title: Text(
           'Pattern Detection',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 18),
+          style: TextStyle(fontFamily: 'PlusJakartaSans', fontWeight: FontWeight.w600, fontSize: 18),
         ),
       ),
       body: SafeArea(
@@ -55,7 +55,7 @@ class PatternDetectionScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
                         Text(
                           'What is Pattern Detection?',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(fontFamily: 'PlusJakartaSans', 
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: c.textPrimary,
@@ -64,7 +64,7 @@ class PatternDetectionScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           "Emori analyzes your journal entries over the past 30 days to uncover recurring themes in your thoughts, emotions, and behaviors. By stepping back and looking at the big picture, you might discover things about yourself that you didn't even notice. Finding my patterns gives you the power to break the ones that don't serve you.",
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Nunito', 
                             fontSize: 14,
                             color: c.textSecondary,
                             height: 1.6,
@@ -80,7 +80,7 @@ class PatternDetectionScreen extends ConsumerWidget {
 
               Text(
                 'Recent Emotions',
-                style: GoogleFonts.poppins(
+                style: TextStyle(fontFamily: 'PlusJakartaSans', 
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: c.textPrimary,
@@ -103,7 +103,7 @@ class PatternDetectionScreen extends ConsumerWidget {
                           child: Center(
                             child: Text(
                               "Not enough data to graph your emotions yet. Keep journaling!",
-                              style: GoogleFonts.inter(color: c.textSecondary),
+                              style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -202,7 +202,7 @@ class _InsightCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'PlusJakartaSans', 
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: c.textPrimary,
@@ -210,7 +210,7 @@ class _InsightCard extends StatelessWidget {
                       ),
                       Text(
                         subtitle,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Nunito', 
                           fontSize: 12,
                           color: c.textHint,
                         ),
@@ -232,7 +232,7 @@ class _InsightCard extends StatelessWidget {
                   children: [
                     Text(
                       result,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Nunito', 
                         fontSize: 13,
                         height: 1.7,
                         color: c.textPrimary,
@@ -252,7 +252,7 @@ class _InsightCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           Text(
                             'Regenerate',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Nunito', 
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: AppColors.teal,
@@ -269,7 +269,7 @@ class _InsightCard extends StatelessWidget {
                 children: [
                   Text(
                     'Something went wrong. Try again.',
-                    style: GoogleFonts.inter(color: AppColors.error),
+                    style: TextStyle(fontFamily: 'Nunito', color: AppColors.error),
                   ),
                   const SizedBox(height: 10),
                   _buildButton(),
@@ -296,7 +296,7 @@ class _InsightCard extends StatelessWidget {
         child: Center(
           child: Text(
             buttonLabel,
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -332,7 +332,7 @@ class _InsightCard extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Emori is thinking...',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Nunito', 
             fontSize: 12,
             color: AppColors.teal,
             fontStyle: FontStyle.italic,
@@ -391,7 +391,7 @@ class _EmotionChart extends StatelessWidget {
                     value: data.value.toDouble(),
                     title: isLarge ? '${percentage.toStringAsFixed(0)}%' : '',
                     radius: 50,
-                    titleStyle: GoogleFonts.inter(
+                    titleStyle: TextStyle(fontFamily: 'Nunito', 
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -424,7 +424,7 @@ class _EmotionChart extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     '${data.key} (${data.value})',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Nunito', 
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: c.textPrimary,

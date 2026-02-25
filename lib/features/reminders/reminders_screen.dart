@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -207,7 +207,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     children: [
                       Text(
                         label,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'PlusJakartaSans', 
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: label == 'Overdue'
@@ -232,7 +232,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         ),
                         child: Text(
                           '${items.length}',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Nunito', 
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: label == 'Overdue'
@@ -321,28 +321,28 @@ class _ReminderCard extends StatelessWidget {
           ),
           title: Text(
             'Delete this reminder?',
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'PlusJakartaSans', 
               fontWeight: FontWeight.w600,
               color: c.textPrimary,
             ),
           ),
           content: Text(
             'This reminder will be permanently removed.',
-            style: GoogleFonts.inter(color: c.textSecondary),
+            style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.inter(color: c.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito', color: c.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(
                 'Delete',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Nunito', 
                   color: AppColors.error,
                   fontWeight: FontWeight.w600,
                 ),
@@ -396,7 +396,7 @@ class _ReminderCard extends StatelessWidget {
                           : isOverdue
                           ? 'OVERDUE'
                           : 'REMINDER',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Nunito', 
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: isCompleted
@@ -410,7 +410,7 @@ class _ReminderCard extends StatelessWidget {
                     const Spacer(),
                     Text(
                       _relativeDate(reminder.dueDate),
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Nunito', 
                         fontSize: 11,
                         color: isOverdue ? AppColors.coral : c.textHint,
                         fontWeight: isOverdue
@@ -463,7 +463,7 @@ class _ReminderCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         reminder.title,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Nunito', 
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: isCompleted ? c.textHint : c.textPrimary,
@@ -485,7 +485,7 @@ class _ReminderCard extends StatelessWidget {
                       reminder.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Nunito', 
                         fontSize: 13,
                         height: 1.6,
                         color: c.textSecondary,
@@ -514,7 +514,7 @@ class _ReminderCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         DateFormat('EEEE, MMMM d, y').format(reminder.dueDate),
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Nunito', 
                           fontSize: 12,
                           color: c.textSecondary,
                         ),
